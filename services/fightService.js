@@ -1,7 +1,13 @@
-const { FightRepository } = require('../repositories/fightRepository');
+const { FightRepository } = require("../repositories/fightRepository");
 
 class FightersService {
-    // OPTIONAL TODO: Implement methods to work with fights
+    getAll() {
+        return FightRepository.getAll();
+    }
+
+    create(fight) {
+        return FightRepository.create(fight);
+    }
 }
 
 module.exports = new FightersService();
