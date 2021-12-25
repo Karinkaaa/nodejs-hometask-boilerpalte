@@ -1,5 +1,9 @@
 const apiUrl = '/api';
 
+export const getAll = async (entityName) => {
+    return await makeRequest(`${entityName}`, 'GET');
+}
+
 export const get = async (entityName, id = '') => {
     return await makeRequest(`${entityName}/${id}`, 'GET');
 }
