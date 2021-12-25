@@ -5,7 +5,7 @@ const { isExistKeysInTemplateObject, isEqualObjectKeys } = require("./user.valid
 
 const createFighterValid = (req, res, next) => {
     const { id, ...fighterTemplate } = fighter;
-    const incomeFighter = { health: 100, ...req.body };
+    const incomeFighter = { health: 100, attack: 5, ...req.body };
 
     if (isEqualObjectKeys(fighterTemplate, incomeFighter)) {
         const { name, power, defense, health } = incomeFighter;
@@ -13,7 +13,7 @@ const createFighterValid = (req, res, next) => {
         if (isValidPower(power) &&
             isValidDefense(defense) &&
             isValidHealth(health) &&
-            isUniqueValueInFighterDB("name", name)
+            isUniqueValueInFighterDB("name", new RegExp(name, "i"))
         ) {
             return next();
         }
@@ -31,7 +31,8 @@ const updateFighterValid = (req, res, next) => {
         res.err = new ResponseError("Fighter not found", 404);
     } else if ((incomeFighter && Object.keys(incomeFighter).length === 0) ||
         !isExistKeysInTemplateObject(incomeFighter, fighterTemplate) ||
-        !isValidFighterEntityToUpdate(incomeFighter)
+        !isValidFighterEntityToUpdate(incomeFighter) ||
+        !isUniqueValueInFighterDB("name", new RegExp(incomeFighter.name, "i"))
     ) {
         res.err = new ResponseError("Fighter entity to update isn't valid", 400);
     }
@@ -51,6 +52,9 @@ const isValidHealth = (health) => {
 };
 
 const isUniqueValueInFighterDB = (key, value) => {
+    if (value instanceof RegExp) {
+        return !FighterService.getAll().find((fighter) => value.test(fighter[key]));
+    }
     return !FighterService.search({ [key]: value });
 };
 
