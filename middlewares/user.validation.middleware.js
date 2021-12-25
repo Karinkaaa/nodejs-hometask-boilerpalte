@@ -21,8 +21,18 @@ const createUserValid = (req, res, next) => {
 };
 
 const updateUserValid = (req, res, next) => {
-    // TODO: Implement validatior for user entity during update
+    const { id, ...userTemplate } = user;
+    const item = UserService.search({ id: req.params.id });
+    const incomeUser = req.body;
 
+    if (!item) {
+        res.err = new ResponseError("User not found", 404);
+    } else if ((incomeUser && Object.keys(incomeUser).length === 0) ||
+        !isExistKeysInTemplateObject(incomeUser, userTemplate) ||
+        !isValidUserEntityToUpdate(incomeUser)
+    ) {
+        res.err = new ResponseError("User entity to update isn't valid", 400);
+    }
     next();
 };
 
@@ -51,5 +61,32 @@ const isUniqueValueInUserDB = (key, value) => {
     return !UserService.search({ [key]: value });
 };
 
+const isExistKeysInTemplateObject = (obj, objTemplate) => {
+    const objKeys1 = Object.keys(obj);
+    const objKeys2 = Object.keys(objTemplate);
+
+    return objKeys1.every((key) => objKeys2.includes(key));
+};
+
+const isValidUserValue = (key, value) => {
+    if (value === "") {
+        return false;
+    } else if (key === "email") {
+        return isValidEmail(value);
+    } else if (key === "phoneNumber") {
+        return isValidPhoneNumber(value);
+    } else if (key === "password") {
+        return isValidPassword(value);
+    } else {
+        return true;
+    }
+};
+
+const isValidUserEntityToUpdate = (fighter) => {
+    return Object.entries(fighter).every(([key, value]) => isValidUserValue(key, value));
+};
+
 exports.createUserValid = createUserValid;
 exports.updateUserValid = updateUserValid;
+exports.isEqualObjectKeys = isEqualObjectKeys;
+exports.isExistKeysInTemplateObject = isExistKeysInTemplateObject;
