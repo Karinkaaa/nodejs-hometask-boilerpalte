@@ -1,11 +1,9 @@
 const { fighter } = require("../models/fighter");
 const FighterService = require("../services/fighterService");
 const { ResponseError } = require("./response.middleware");
-const { isEqualObjectKeys } = require("./user.validation.middleware");
+const { isExistKeysInTemplateObject, isEqualObjectKeys } = require("./user.validation.middleware");
 
 const createFighterValid = (req, res, next) => {
-    // TODO: Implement validation for fighter entity during creation
-
     const { id, ...fighterTemplate } = fighter;
     const incomeFighter = { health: 100, ...req.body };
 
@@ -25,7 +23,18 @@ const createFighterValid = (req, res, next) => {
 };
 
 const updateFighterValid = (req, res, next) => {
-    // TODO: Implement validatior for fighter entity during update
+    const { id, ...fighterTemplate } = fighter;
+    const item = FighterService.search({ id: req.params.id });
+    const incomeFighter = req.body;
+
+    if (!item) {
+        res.err = new ResponseError("Fighter not found", 404);
+    } else if ((incomeFighter && Object.keys(incomeFighter).length === 0) ||
+        !isExistKeysInTemplateObject(incomeFighter, fighterTemplate) ||
+        !isValidFighterEntityToUpdate(incomeFighter)
+    ) {
+        res.err = new ResponseError("Fighter entity to update isn't valid", 400);
+    }
     next();
 };
 
@@ -43,6 +52,24 @@ const isValidHealth = (health) => {
 
 const isUniqueValueInFighterDB = (key, value) => {
     return !FighterService.search({ [key]: value });
+};
+
+const isValidFighterValue = (key, value) => {
+    if (value === "") {
+        return false;
+    } else if (key === "power") {
+        return isValidPower(value);
+    } else if (key === "defense") {
+        return isValidDefense(value);
+    } else if (key === "health") {
+        return isValidHealth(value);
+    } else {
+        return true;
+    }
+};
+
+const isValidFighterEntityToUpdate = (fighter) => {
+    return Object.entries(fighter).every(([key, value]) => isValidFighterValue(key, value));
 };
 
 exports.createFighterValid = createFighterValid;
