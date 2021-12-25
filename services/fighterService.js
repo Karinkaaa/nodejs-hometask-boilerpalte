@@ -14,7 +14,7 @@ class FighterService {
     }
 
     create(fighter) {
-        return FighterRepository.create({ health: 100, ...fighter });
+        return FighterRepository.create({ health: 100, attack: 5, ...fighter });
     }
 
     update(id, fighter) {
