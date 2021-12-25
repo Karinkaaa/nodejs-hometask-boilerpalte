@@ -1,15 +1,14 @@
-const { Router } = require('express');
-const AuthService = require('../services/authService');
-const { responseMiddleware } = require('../middlewares/response.middleware');
+const { Router } = require("express");
+const AuthService = require("../services/authService");
+const { responseMiddleware, ResponseError } = require("../middlewares/response.middleware");
 
 const router = Router();
 
-router.post('/login', (req, res, next) => {
+router.post("/login", (req, res, next) => {
     try {
-        // TODO: Implement login action (get the user if it exist with entered credentials)
-        res.data = data;
+        res.data = AuthService.login(req.body);
     } catch (err) {
-        res.err = err;
+        res.err = new ResponseError(err.message, 404);
     } finally {
         next();
     }
